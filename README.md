@@ -10,8 +10,11 @@ A comprehensive tool to export your full Yazio history into a local SQLite datab
 - **SQLite Storage**: Saves everything locally for permanent access and fast retrieval.
 - **Dashboard**:
   - **Overview**: Daily charts for Energy, Steps, Water, and Macros against your goals.
+    ![Overview Screenshot](examples/overview.png)
   - **Analysis**: Historical table showing Actual vs. Goal ratios for every day.
+    ![Analysis Screenshot](examples/analysis.png)
   - **Journal**: A categorized daily food log with per-item macro breakdowns.
+    ![Journal Screenshot](examples/journal.png)
 - **LLM-Ready Export**: One-click CSV export of your entire food history, optimized for analysis by LLMs.
 
 ## Prerequisites
