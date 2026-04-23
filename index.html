@@ -1,196 +1,342 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Yazio Dashboard</title>
+    <title>Yazio Insights - Dark Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              yazio: {
+                emerald: "#00ac84",
+                sky: "#4ab4f5",
+                orange: "#ff9f1c",
+                coral: "#f45b69",
+                lime: "#ceff1a",
+                slate: "#0f172a",
+                card: "#1e293b",
+              },
+            },
+          },
+        },
+      };
+    </script>
     <style>
+      body {
+        background-color: #0f172a;
+        color: #f1f5f9;
+      }
       .tab-content {
         display: none;
       }
       .tab-content.active {
         display: block;
       }
+      .tab-btn {
+        transition: all 0.2s ease;
+        border: 2px solid transparent;
+      }
       .tab-btn.active {
-        border-bottom: 2px solid #3b82f6;
-        color: #3b82f6;
+        border: 2px solid #00ac84;
+        color: #00ac84;
+        background-color: rgba(0, 172, 132, 0.05);
       }
       .sidebar {
         height: calc(100vh - 4rem);
         position: sticky;
         top: 0rem;
       }
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #1e293b;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #475569;
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #64748b;
+      }
+      .avg-btn {
+        border: 2px solid transparent;
+        transition: all 0.2s ease;
+      }
+      .avg-btn.active {
+        border-color: #00ac84 !important;
+        background-color: #00ac84 !important;
+        color: white !important;
+      }
     </style>
   </head>
-  <body class="bg-gray-100 min-h-screen">
+  <body class="min-h-screen font-sans antialiased text-slate-200">
     <div class="max-w-[1400px] mx-auto py-8 px-4">
-      <header class="mb-8 flex justify-between items-center">
-        <h1 class="text-3xl font-bold text-gray-800">Yazio Dashboard</h1>
-        <div class="text-sm text-gray-500" id="last-updated"></div>
+      <header
+        class="mb-8 flex flex-col md:flex-row justify-between items-center border-b border-slate-800 pb-6 gap-4"
+      >
+        <h1
+          class="text-3xl font-black tracking-tight text-white flex items-center gap-3"
+        >
+          <span
+            class="bg-yazio-emerald w-3 h-8 rounded-full shadow-[0_0_15px_rgba(0,172,132,0.4)]"
+          ></span>
+          YAZIO <span class="text-yazio-emerald font-light">INSIGHTS</span>
+        </h1>
+        <div
+          class="text-[10px] text-slate-300 font-mono bg-slate-800/30 px-4 py-2 rounded-full border border-slate-700 uppercase tracking-widest"
+          id="last-updated"
+        ></div>
       </header>
 
       <!-- Tabs Navigation -->
-      <div class="flex border-b border-gray-200 mb-6">
+      <div
+        class="flex gap-2 mb-10 bg-slate-800/30 p-1 rounded-xl w-fit border border-slate-800/50"
+      >
         <button
           onclick="showTab('overview')"
           id="btn-overview"
-          class="tab-btn px-6 py-2 font-medium text-gray-600 hover:text-blue-500 active"
+          class="tab-btn px-6 py-2 rounded-lg font-bold text-xs active"
         >
-          Daily Overview
+          OVERVIEW
         </button>
         <button
           onclick="showTab('macros')"
           id="btn-macros"
-          class="tab-btn px-6 py-2 font-medium text-gray-600 hover:text-blue-500"
+          class="tab-btn px-6 py-2 rounded-lg font-bold text-xs text-slate-300 hover:text-white"
         >
-          Macros & Meals
+          ANALYSIS
         </button>
         <button
           onclick="showTab('food')"
           id="btn-food"
-          class="tab-btn px-6 py-2 font-medium text-gray-600 hover:text-blue-500"
+          class="tab-btn px-6 py-2 rounded-lg font-bold text-xs text-slate-300 hover:text-white"
         >
-          Daily Food
+          JOURNAL
         </button>
       </div>
+
       <!-- Tab Content: Overview -->
       <div id="overview" class="tab-content active">
         <div class="flex flex-col lg:flex-row gap-8">
-          <!-- Charts Column (Single Column) -->
+          <!-- Charts Column -->
           <div class="flex-grow space-y-8">
-            <div class="bg-white p-6 rounded-lg shadow">
-              <h2 class="text-xl font-semibold mb-4 text-gray-700">
-                Energy (kcal)
+            <div
+              class="bg-yazio-card p-6 rounded-2xl shadow-xl border border-slate-800/60 transition-all hover:border-slate-700"
+            >
+              <h2
+                class="text-xs font-black mb-6 text-slate-300 uppercase tracking-[0.3em] flex items-center gap-2"
+              >
+                <div
+                  class="w-1.5 h-1.5 rounded-full bg-yazio-emerald shadow-[0_0_8px_#00ac84]"
+                ></div>
+                ENERGY INTAKE
               </h2>
               <div class="h-64"><canvas id="energyChart"></canvas></div>
             </div>
-            <div class="bg-white p-6 rounded-lg shadow">
-              <h2 class="text-xl font-semibold mb-4 text-gray-700">Steps</h2>
+
+            <div
+              class="bg-yazio-card p-6 rounded-2xl shadow-xl border border-slate-800/60 transition-all hover:border-slate-700"
+            >
+              <h2
+                class="text-xs font-black mb-6 text-slate-300 uppercase tracking-[0.3em] flex items-center gap-2"
+              >
+                <div
+                  class="w-1.5 h-1.5 rounded-full bg-yazio-sky shadow-[0_0_8px_#4ab4f5]"
+                ></div>
+                ACTIVITY STEPS
+              </h2>
               <div class="h-64"><canvas id="stepsChart"></canvas></div>
             </div>
-            <div class="bg-white p-6 rounded-lg shadow">
-              <h2 class="text-xl font-semibold mb-4 text-gray-700">
-                Water (ml)
+
+            <div
+              class="bg-yazio-card p-6 rounded-2xl shadow-xl border border-slate-800/60 transition-all hover:border-slate-700"
+            >
+              <h2
+                class="text-xs font-black mb-6 text-slate-300 uppercase tracking-[0.3em] flex items-center gap-2"
+              >
+                <div
+                  class="w-1.5 h-1.5 rounded-full bg-blue-400 shadow-[0_0_8px_#60a5fa]"
+                ></div>
+                HYDRATION
               </h2>
               <div class="h-64"><canvas id="waterChart"></canvas></div>
             </div>
-            <div class="bg-white p-6 rounded-lg shadow">
-              <h2 class="text-xl font-semibold mb-4 text-gray-700">
-                Protein (g)
+
+            <div
+              class="bg-yazio-card p-6 rounded-2xl shadow-xl border border-slate-800/60 transition-all hover:border-slate-700"
+            >
+              <h2
+                class="text-xs font-black mb-6 text-slate-300 uppercase tracking-[0.3em] flex items-center gap-2"
+              >
+                <div
+                  class="w-1.5 h-1.5 rounded-full bg-yazio-orange shadow-[0_0_8px_#ff9f1c]"
+                ></div>
+                PROTEIN
               </h2>
               <div class="h-64"><canvas id="proteinChart"></canvas></div>
             </div>
-            <div class="bg-white p-6 rounded-lg shadow">
-              <h2 class="text-xl font-semibold mb-4 text-gray-700">
-                Carbohydrates (g)
+
+            <div
+              class="bg-yazio-card p-6 rounded-2xl shadow-xl border border-slate-800/60 transition-all hover:border-slate-700"
+            >
+              <h2
+                class="text-xs font-black mb-6 text-slate-300 uppercase tracking-[0.3em] flex items-center gap-2"
+              >
+                <div
+                  class="w-1.5 h-1.5 rounded-full bg-yazio-lime shadow-[0_0_8px_#ceff1a]"
+                ></div>
+                CARBOHYDRATES
               </h2>
               <div class="h-64"><canvas id="carbChart"></canvas></div>
             </div>
-            <div class="bg-white p-6 rounded-lg shadow">
-              <h2 class="text-xl font-semibold mb-4 text-gray-700">Fat (g)</h2>
+
+            <div
+              class="bg-yazio-card p-6 rounded-2xl shadow-xl border border-slate-800/60 transition-all hover:border-slate-700"
+            >
+              <h2
+                class="text-xs font-black mb-6 text-slate-300 uppercase tracking-[0.3em] flex items-center gap-2"
+              >
+                <div
+                  class="w-1.5 h-1.5 rounded-full bg-yazio-coral shadow-[0_0_8px_#f45b69]"
+                ></div>
+                LIPIDS / FAT
+              </h2>
               <div class="h-64"><canvas id="fatChart"></canvas></div>
             </div>
           </div>
 
-          <!-- Sidebar (Aligned with the first graph) -->
+          <!-- Sidebar -->
           <div class="w-full lg:w-80 shrink-0">
             <div class="sidebar">
-              <div class="bg-white p-6 rounded-lg shadow space-y-6">
-                <h2 class="text-xl font-bold text-gray-800">Averages</h2>
+              <div
+                class="bg-yazio-card p-6 rounded-2xl shadow-2xl border border-slate-700/50 space-y-8"
+              >
+                <h2
+                  class="text-sm font-black text-white uppercase tracking-[0.2em] border-b border-slate-800"
+                >
+                  Averages
+                </h2>
 
-                <div class="flex flex-wrap gap-2">
+                <div class="grid grid-cols-2 gap-2">
                   <button
                     onclick="updateAverages(7)"
-                    class="avg-btn bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-medium hover:bg-blue-200"
+                    class="avg-btn bg-slate-800 text-slate-300 px-3 py-2 rounded-lg text-[10px] font-black hover:bg-slate-700 transition-colors uppercase tracking-widest"
                   >
-                    Week
+                    7D
                   </button>
                   <button
                     onclick="updateAverages(30)"
-                    class="avg-btn bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-medium hover:bg-blue-200"
+                    class="avg-btn bg-slate-800 text-slate-300 px-3 py-2 rounded-lg text-[10px] font-black hover:bg-slate-700 transition-colors uppercase tracking-widest"
                   >
-                    Month
+                    30D
                   </button>
                   <button
                     onclick="updateAverages(365)"
-                    class="avg-btn bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-medium hover:bg-blue-200"
+                    class="avg-btn bg-slate-800 text-slate-300 px-3 py-2 rounded-lg text-[10px] font-black hover:bg-slate-700 transition-colors uppercase tracking-widest"
                   >
-                    Year
+                    1Y
                   </button>
                   <button
                     onclick="updateAverages(0)"
-                    class="avg-btn bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-medium hover:bg-blue-700"
+                    class="avg-btn bg-slate-800 text-slate-300 px-3 py-2 rounded-lg text-[10px] font-black hover:bg-slate-700 transition-colors active uppercase tracking-widest"
                   >
-                    All
+                    ALL
                   </button>
                 </div>
 
                 <div id="averages-content" class="space-y-4">
-                  <div class="p-3 bg-gray-50 rounded">
-                    <div class="text-xs text-gray-500 uppercase font-bold">
-                      Avg Energy
+                  <div
+                    class="p-4 bg-slate-800/30 rounded-xl border border-slate-800/50"
+                  >
+                    <div
+                      class="text-[9px] text-slate-300 uppercase font-black tracking-widest mb-1"
+                    >
+                      Energy
                     </div>
                     <div
                       id="avg-energy"
-                      class="text-2xl font-bold text-blue-600"
+                      class="text-2xl font-black text-yazio-emerald"
                     >
                       0 kcal
                     </div>
                   </div>
-                  <div class="p-3 bg-gray-50 rounded">
-                    <div class="text-xs text-gray-500 uppercase font-bold">
-                      Avg Steps
+                  <div
+                    class="p-4 bg-slate-800/30 rounded-xl border border-slate-800/50"
+                  >
+                    <div
+                      class="text-[9px] text-slate-300 uppercase font-black tracking-widest mb-1"
+                    >
+                      Steps
                     </div>
                     <div
                       id="avg-steps"
-                      class="text-2xl font-bold text-green-600"
+                      class="text-2xl font-black text-yazio-sky"
                     >
                       0
                     </div>
                   </div>
-                  <div class="p-3 bg-gray-50 rounded">
-                    <div class="text-xs text-gray-500 uppercase font-bold">
-                      Avg Water
+                  <div
+                    class="p-4 bg-slate-800/30 rounded-xl border border-slate-800/50"
+                  >
+                    <div
+                      class="text-[9px] text-slate-300 uppercase font-black tracking-widest mb-1"
+                    >
+                      Water
                     </div>
                     <div
                       id="avg-water"
-                      class="text-xl font-semibold text-cyan-600"
+                      class="text-2xl font-black text-blue-400"
                     >
                       0 ml
                     </div>
                   </div>
-                  <div class="p-3 bg-gray-50 rounded">
-                    <div class="text-xs text-gray-500 uppercase font-bold">
-                      Avg Protein
+                  <div
+                    class="p-4 bg-slate-800/30 rounded-xl border border-slate-800/50"
+                  >
+                    <div
+                      class="text-[9px] text-slate-300 uppercase font-black tracking-widest mb-1"
+                    >
+                      Protein
                     </div>
                     <div
                       id="avg-protein"
-                      class="text-xl font-semibold text-orange-600"
+                      class="text-2xl font-black text-yazio-orange"
                     >
                       0g
                     </div>
                   </div>
-
-                  <div class="p-3 bg-gray-50 rounded">
-                    <div class="text-xs text-gray-500 uppercase font-bold">
-                      Avg Carbs
+                  <div
+                    class="p-4 bg-slate-800/30 rounded-xl border border-slate-800/50"
+                  >
+                    <div
+                      class="text-[9px] text-slate-300 uppercase font-black tracking-widest mb-1"
+                    >
+                      Carbs
                     </div>
                     <div
                       id="avg-carb"
-                      class="text-xl font-semibold text-purple-600"
+                      class="text-2xl font-black text-yazio-lime"
                     >
                       0g
                     </div>
                   </div>
-                  <div class="p-3 bg-gray-50 rounded">
-                    <div class="text-xs text-gray-500 uppercase font-bold">
-                      Avg Fat
+                  <div
+                    class="p-4 bg-slate-800/30 rounded-xl border border-slate-800/50"
+                  >
+                    <div
+                      class="text-[9px] text-slate-300 uppercase font-black tracking-widest mb-1"
+                    >
+                      Fat
                     </div>
                     <div
                       id="avg-fat"
-                      class="text-xl font-semibold text-yellow-600"
+                      class="text-2xl font-black text-yazio-coral"
                     >
                       0g
                     </div>
@@ -204,77 +350,68 @@
 
       <!-- Tab Content: Macros -->
       <div id="macros" class="tab-content space-y-8">
-        <div class="bg-white p-6 rounded-lg shadow overflow-x-auto">
-          <h2 class="text-xl font-semibold mb-4 text-gray-700">
-            Macros Aggregated (Daily)
+        <div
+          class="bg-yazio-card p-6 rounded-2xl shadow-xl border border-slate-800"
+        >
+          <h2
+            class="text-sm font-black mb-8 text-slate-300 uppercase tracking-[0.3em]"
+          >
+            Historical Data
           </h2>
-          <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-              <tr>
-                <th
-                  class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase"
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-slate-800">
+              <thead>
+                <tr
+                  class="text-left text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]"
                 >
-                  Date
-                </th>
-                <th
-                  class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase"
-                >
-                  Protein (g)
-                </th>
-                <th
-                  class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase"
-                >
-                  Goal P
-                </th>
-                <th
-                  class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase"
-                >
-                  Carbs (g)
-                </th>
-                <th
-                  class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase"
-                >
-                  Goal C
-                </th>
-                <th
-                  class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase"
-                >
-                  Fat (g)
-                </th>
-                <th
-                  class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase"
-                >
-                  Goal F
-                </th>
-              </tr>
-            </thead>
-            <tbody
-              id="macros-table-body"
-              class="bg-white divide-y divide-gray-200 text-sm text-gray-700"
-            ></tbody>
-          </table>
+                  <th class="px-4 py-4">Date</th>
+                  <th class="px-4 py-4 text-yazio-orange">
+                    Protein (Act/Goal)
+                  </th>
+                  <th class="px-4 py-4 text-yazio-lime">Carbs (Act/Goal)</th>
+                  <th class="px-4 py-4 text-yazio-coral">Fat (Act/Goal)</th>
+                </tr>
+              </thead>
+              <tbody
+                id="macros-table-body"
+                class="divide-y divide-slate-800/50 text-xs text-slate-300 font-bold"
+              ></tbody>
+            </table>
+          </div>
         </div>
 
-        <div class="bg-white p-6 rounded-lg shadow">
-          <h2 class="text-xl font-semibold mb-4 text-gray-700">
-            Macros Distribution (Last 7 Days)
+        <div
+          class="bg-yazio-card p-8 rounded-2xl shadow-xl border border-slate-800/60"
+        >
+          <h2
+            class="text-sm font-black mb-8 text-slate-300 uppercase tracking-[0.3em] text-center"
+          >
+            7-Day Composition
           </h2>
-          <div class="h-80"><canvas id="macrosChart"></canvas></div>
+          <div class="h-96"><canvas id="macrosChart"></canvas></div>
         </div>
       </div>
 
       <!-- Tab Content: Food Log -->
       <div id="food" class="tab-content space-y-8">
-        <div class="bg-white p-6 rounded-lg shadow">
-          <div class="flex justify-between items-center mb-6">
-            <h2 class="text-xl font-semibold text-gray-700">Daily Food Log</h2>
+        <div
+          class="bg-yazio-card p-6 md:p-10 rounded-2xl shadow-xl border border-slate-800"
+        >
+          <div
+            class="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-4"
+          >
+            <h2
+              class="text-xl font-black text-white uppercase tracking-widest italic border-l-4 border-yazio-emerald pl-4"
+            >
+              Daily Journal
+            </h2>
             <select
               id="food-date-select"
               onchange="updateFoodLog()"
-              class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5"
+              class="w-full md:w-64 bg-slate-800 border border-slate-700 text-white text-xs font-black rounded-lg focus:ring-1 focus:ring-yazio-emerald outline-none p-3 cursor-pointer appearance-none uppercase tracking-widest"
             ></select>
           </div>
-          <div id="food-log-content" class="space-y-6">
+          <div id="food-log-content" class="space-y-12">
             <!-- Populated by JS -->
           </div>
         </div>
@@ -284,15 +421,25 @@
     <script>
       let allData = [];
 
+      // Global Chart.js Defaults
+      Chart.defaults.color = "#cbd5e1";
+      Chart.defaults.borderColor = "rgba(255,255,255,0.05)";
+      Chart.defaults.font.family = "system-ui, -apple-system, sans-serif";
+      Chart.defaults.font.weight = "700";
+      Chart.defaults.font.size = 11;
+
       function showTab(tabId) {
         document
           .querySelectorAll(".tab-content")
           .forEach((c) => c.classList.remove("active"));
-        document
-          .querySelectorAll(".tab-btn")
-          .forEach((b) => b.classList.remove("active"));
+        document.querySelectorAll(".tab-btn").forEach((b) => {
+          b.classList.remove("active", "text-yazio-emerald", "bg-slate-800/80");
+          b.classList.add("text-slate-300");
+        });
         document.getElementById(tabId).classList.add("active");
-        document.getElementById("btn-" + tabId).classList.add("active");
+        const activeBtn = document.getElementById("btn-" + tabId);
+        activeBtn.classList.add("active");
+        activeBtn.classList.remove("text-slate-300");
       }
 
       async function init() {
@@ -302,9 +449,8 @@
 
           if (allData.length > 0) {
             document.getElementById("last-updated").textContent =
-              "Last update: " + allData[allData.length - 1].date;
+              "SYNCED " + allData[allData.length - 1].date;
 
-            // Populate food date selector
             const dateSelect = document.getElementById("food-date-select");
             allData
               .slice()
@@ -320,8 +466,10 @@
           renderDailyCharts();
           populateMacrosTable();
           renderMacrosChart();
-          updateAverages(0); // Default to "All"
+          updateAverages(0);
           updateFoodLog();
+
+          showTab("overview");
         } catch (error) {
           console.error("Error:", error);
         }
@@ -335,11 +483,10 @@
 
         if (!dayData || !dayData.food_log || dayData.food_log.length === 0) {
           container.innerHTML =
-            '<p class="text-gray-500 italic">No food data logged for this day.</p>';
+            '<p class="text-slate-500 italic text-center py-20 font-black uppercase tracking-[0.5em] text-[10px]">No activity logs for this period.</p>';
           return;
         }
 
-        // Group by daytime
         const meals = {};
         dayData.food_log.forEach((item) => {
           if (!meals[item.daytime]) meals[item.daytime] = [];
@@ -351,39 +498,43 @@
         daytimeOrder.forEach((daytime) => {
           if (meals[daytime]) {
             const mealDiv = document.createElement("div");
-            mealDiv.className = "border-l-4 border-blue-500 pl-4 py-1";
+            mealDiv.className =
+              "border-l-2 border-slate-700 pl-6 space-y-4 mb-10";
 
             const title = document.createElement("h3");
-            title.className = "text-lg font-bold text-gray-800 capitalize mb-2";
-            title.textContent = daytime;
+            title.className =
+              "text-sm font-black text-slate-300 uppercase tracking-[0.4em] mb-6 flex items-center justify-between";
+            title.innerHTML = `<span>${daytime}</span>`;
             mealDiv.appendChild(title);
 
-            const list = document.createElement("ul");
-            list.className = "space-y-2";
+            const list = document.createElement("div");
+            list.className = "grid grid-cols-1 gap-1.5";
 
-                    meals[daytime].forEach((item) => {
-              const li = document.createElement("li");
+            meals[daytime].forEach((item) => {
+              const li = document.createElement("div");
               li.className =
-                "flex justify-between items-center text-sm bg-gray-50 p-3 rounded";
+                "flex justify-between items-center bg-slate-800/10 px-4 py-1.5 rounded-xl border border-slate-800/30 transition-all hover:bg-slate-800/30 group";
 
               const nameDiv = document.createElement("div");
-              nameDiv.className = "flex items-center gap-2";
+              nameDiv.className = "flex items-center gap-4";
               nameDiv.innerHTML =
-                (item.is_ai ? `<span class="bg-purple-100 text-purple-700 text-[10px] font-bold px-1.5 py-0.5 rounded border border-purple-200 shrink-0">AI</span>` : '') +
-                `<span class="font-semibold text-gray-700">${item.name || "Unknown Product"}</span>` +
-                (item.brand
-                  ? ` <span class="text-xs text-gray-400">(${item.brand})</span>`
-                  : "");
+                (item.is_ai
+                  ? `<span class="bg-yazio-emerald/10 text-yazio-emerald text-[8px] font-black px-2 py-0.5 rounded border border-yazio-emerald/20">AI</span>`
+                  : `<span class="bg-slate-700/30 text-slate-300 text-[8px] font-black px-2 py-0.5 rounded border border-slate-700/50">DB</span>`) +
+                `<div class="flex flex-col">
+                    <span class="font-bold text-slate-200 group-hover:text-white transition-colors">${item.name || "Logged Item"}</span>
+                    ${item.brand ? `<span class="text-[9px] text-slate-400 uppercase font-black tracking-widest">${item.brand}</span>` : ""}
+                 </div>`;
 
               const macroDiv = document.createElement("div");
-              macroDiv.className = "text-right text-xs space-y-0.5 shrink-0";
+              macroDiv.className = "text-right flex items-center gap-8";
               macroDiv.innerHTML = `
-                  <div class="font-bold text-blue-600">${Math.round(item.calories || 0)} kcal</div>
-                  <div class="text-gray-500">
-                      <span class="text-orange-600">P: ${Math.round(item.protein || 0)}g</span> | 
-                      <span class="text-purple-600">C: ${Math.round(item.carb || 0)}g</span> | 
-                      <span class="text-yellow-600">F: ${Math.round(item.fat || 0)}g</span>
+                  <div class="hidden md:flex gap-6 text-[9px] font-black text-slate-400">
+                      <div class="flex flex-col items-center"><span class="text-yazio-orange mb-0.5">${Math.round(item.protein || 0)}g</span><span class="opacity-30">PRO</span></div>
+                      <div class="flex flex-col items-center"><span class="text-yazio-lime mb-0.5">${Math.round(item.carb || 0)}g</span><span class="opacity-30">CAR</span></div>
+                      <div class="flex flex-col items-center"><span class="text-yazio-coral mb-0.5">${Math.round(item.fat || 0)}g</span><span class="opacity-30">FAT</span></div>
                   </div>
+                  <div class="w-24 font-black text-slate-100 text-base">${Math.round(item.calories || 0)} <span class="text-[8px] text-slate-400 inline leading-none font-bold uppercase tracking-widest ml-1">KCAL</span></div>
               `;
 
               li.appendChild(nameDiv);
@@ -404,29 +555,61 @@
           {
             label: label,
             data: allData.map((d) => d[dataKey]),
-            backgroundColor: color,
+            backgroundColor: color + "22",
+            borderColor: color,
+            borderWidth: 2,
+            borderRadius: 4,
+            barPercentage: 0.5,
           },
           {
             label: "Goal",
             data: allData.map((d) => d[goalKey]),
-            borderColor: "#ef4444",
-            type: "line",
-            pointRadius: 0,
+            borderColor: "#f45b69",
             borderWidth: 2,
+            borderDash: [10, 5],
+            pointRadius: 0,
+            type: "line",
+            tension: 0.2,
           },
         ];
 
         const chartOptions = {
           responsive: true,
           maintainAspectRatio: false,
+          interaction: { intersect: false, mode: "index" },
           plugins: {
-            legend: {
-              position: "top",
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: "#1e293b",
+              titleColor: "#fff",
+              bodyColor: "#cbd5e1",
+              borderColor: "#334155",
+              borderWidth: 1,
+              padding: 12,
+              cornerRadius: 8,
+              usePointStyle: true,
+            },
+          },
+          scales: {
+            x: {
+              grid: { display: false },
+              ticks: {
+                maxRotation: 0,
+                autoSkip: true,
+                maxTicksLimit: 12,
+                font: { size: 9 },
+                color: "#94a3b8",
+              },
+            },
+            y: {
+              grid: { color: "rgba(255,255,255,0.03)" },
+              border: { display: false },
+              beginAtZero: true,
+              ticks: { font: { size: 9 }, color: "#94a3b8" },
             },
           },
         };
 
-        // Energy
         new Chart(document.getElementById("energyChart"), {
           type: "bar",
           data: {
@@ -435,23 +618,21 @@
               "kcal",
               "actual_energy",
               "goal_energy",
-              "#3b82f6",
+              "#00ac84",
             ),
           },
           options: chartOptions,
         });
 
-        // Steps
         new Chart(document.getElementById("stepsChart"), {
           type: "bar",
           data: {
             labels: labels,
-            datasets: createDataset("Steps", "steps", "goal_steps", "#10b981"),
+            datasets: createDataset("Steps", "steps", "goal_steps", "#4ab4f5"),
           },
           options: chartOptions,
         });
 
-        // Water
         new Chart(document.getElementById("waterChart"), {
           type: "bar",
           data: {
@@ -460,13 +641,12 @@
               "ml",
               "water_intake",
               "goal_water",
-              "#06b6d4",
+              "#60a5fa",
             ),
           },
           options: chartOptions,
         });
 
-        // Protein
         new Chart(document.getElementById("proteinChart"), {
           type: "bar",
           data: {
@@ -475,13 +655,12 @@
               "Protein (g)",
               "actual_protein",
               "goal_protein",
-              "#f97316",
+              "#ff9f1c",
             ),
           },
           options: chartOptions,
         });
 
-        // Carbs
         new Chart(document.getElementById("carbChart"), {
           type: "bar",
           data: {
@@ -490,13 +669,12 @@
               "Carbs (g)",
               "actual_carb",
               "goal_carb",
-              "#a855f7",
+              "#ceff1a",
             ),
           },
           options: chartOptions,
         });
 
-        // Fat
         new Chart(document.getElementById("fatChart"), {
           type: "bar",
           data: {
@@ -505,7 +683,7 @@
               "Fat (g)",
               "actual_fat",
               "goal_fat",
-              "#eab308",
+              "#f45b69",
             ),
           },
           options: chartOptions,
@@ -515,19 +693,15 @@
       function populateMacrosTable() {
         const tbody = document.getElementById("macros-table-body");
         tbody.innerHTML = "";
-        // Show last 30 days in table
         allData
           .slice(-30)
           .reverse()
           .forEach((d) => {
-            const row = `<tr>
-                    <td class="px-4 py-2">${d.date}</td>
-                    <td class="px-4 py-2 font-bold ${d.actual_protein >= d.goal_protein ? "text-green-600" : "text-orange-600"}">${Math.round(d.actual_protein)}g</td>
-                    <td class="px-4 py-2 text-gray-400">${Math.round(d.goal_protein)}g</td>
-                    <td class="px-4 py-2 font-bold">${Math.round(d.actual_carb)}g</td>
-                    <td class="px-4 py-2 text-gray-400">${Math.round(d.goal_carb)}g</td>
-                    <td class="px-4 py-2 font-bold">${Math.round(d.actual_fat)}g</td>
-                    <td class="px-4 py-2 text-gray-400">${Math.round(d.goal_fat)}g</td>
+            const row = `<tr class="hover:bg-slate-800/20 transition-colors">
+                    <td class="px-4 py-4 font-mono text-[10px] text-slate-400 tracking-tighter">${d.date}</td>
+                    <td class="px-4 py-4"><span class="text-yazio-orange">${Math.round(d.actual_protein)}</span><span class="text-slate-600 mx-1">/</span><span class="text-slate-500">${Math.round(d.goal_protein)}g</span></td>
+                    <td class="px-4 py-4"><span class="text-yazio-lime">${Math.round(d.actual_carb)}</span><span class="text-slate-600 mx-1">/</span><span class="text-slate-500">${Math.round(d.goal_carb)}g</span></td>
+                    <td class="px-4 py-4"><span class="text-yazio-coral">${Math.round(d.actual_fat)}</span><span class="text-slate-600 mx-1">/</span><span class="text-slate-500">${Math.round(d.goal_fat)}g</span></td>
                 </tr>`;
             tbody.innerHTML += row;
           });
@@ -543,36 +717,54 @@
               {
                 label: "Protein",
                 data: last7.map((d) => d.actual_protein),
-                backgroundColor: "#f97316",
+                backgroundColor: "#ff9f1c",
+                borderRadius: 4,
               },
               {
                 label: "Carbs",
                 data: last7.map((d) => d.actual_carb),
-                backgroundColor: "#a855f7",
+                backgroundColor: "#ceff1a",
+                borderRadius: 4,
               },
               {
                 label: "Fat",
                 data: last7.map((d) => d.actual_fat),
-                backgroundColor: "#eab308",
+                backgroundColor: "#f45b69",
+                borderRadius: 4,
               },
             ],
           },
           options: {
-            scales: { x: { stacked: true }, y: { stacked: true } },
+            responsive: true,
             maintainAspectRatio: false,
+            scales: {
+              x: { stacked: true, grid: { display: false } },
+              y: { stacked: true, grid: { color: "rgba(255,255,255,0.03)" } },
+            },
+            plugins: {
+              legend: {
+                position: "bottom",
+                labels: {
+                  usePointStyle: true,
+                  padding: 30,
+                  boxWidth: 6,
+                  font: { size: 10 },
+                },
+              },
+            },
           },
         });
       }
 
-        function updateAverages(days) {
-          let slice = days === 0 ? allData : allData.slice(-days);
-          if (slice.length === 0) return;
+      function updateAverages(days) {
+        let slice = days === 0 ? allData : allData.slice(-days);
+        if (slice.length === 0) return;
 
-          const avg = (arr) =>
-            (arr.reduce((a, b) => a + (b || 0), 0) / arr.length).toFixed(1);
+        const avg = (arr) =>
+          (arr.reduce((a, b) => a + (b || 0), 0) / arr.length).toFixed(1);
 
-          document.getElementById("avg-energy").textContent =
-            Math.round(avg(slice.map((d) => d.actual_energy))) + " kcal";
+        document.getElementById("avg-energy").textContent =
+          Math.round(avg(slice.map((d) => d.actual_energy))) + " kcal";
         document.getElementById("avg-steps").textContent = Math.round(
           avg(slice.map((d) => d.steps)),
         );
@@ -584,6 +776,17 @@
           Math.round(avg(slice.map((d) => d.actual_carb))) + "g";
         document.getElementById("avg-fat").textContent =
           Math.round(avg(slice.map((d) => d.actual_fat))) + "g";
+
+        document.querySelectorAll(".avg-btn").forEach((btn) => {
+          btn.classList.remove("active");
+        });
+
+        const selectedBtn = event
+          ? event.currentTarget
+          : document.querySelector('.avg-btn[onclick="updateAverages(0)"]');
+        if (selectedBtn) {
+          selectedBtn.classList.add("active");
+        }
       }
 
       init();
