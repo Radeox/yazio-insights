@@ -104,6 +104,7 @@ class YazioDatabase:
                 goal_protein REAL,
                 goal_fat REAL,
                 goal_carb REAL,
+                actual_energy REAL,
                 actual_protein REAL,
                 actual_fat REAL,
                 actual_carb REAL,
@@ -203,6 +204,7 @@ class YazioDatabase:
             d_e, d_c, d_f, d_p = get_meal_data("dinner")
             s_e, s_c, s_f, s_p = get_meal_data("snack")
 
+            actual_energy = b_e + l_e + d_e + s_e
             actual_protein = b_p + l_p + d_p + s_p
             actual_carb = b_c + l_c + d_c + s_c
             actual_fat = b_f + l_f + d_f + s_f
@@ -211,13 +213,13 @@ class YazioDatabase:
                 INSERT OR REPLACE INTO daily_summaries (
                     date, activity_energy, steps, water_intake,
                     goal_energy, goal_water, goal_steps, goal_protein, goal_fat, goal_carb,
-                    actual_protein, actual_fat, actual_carb,
+                    actual_energy, actual_protein, actual_fat, actual_carb,
                     breakfast_energy, breakfast_carb, breakfast_fat, breakfast_protein,
                     lunch_energy, lunch_carb, lunch_fat, lunch_protein,
                     dinner_energy, dinner_carb, dinner_fat, dinner_protein,
                     snack_energy, snack_carb, snack_fat, snack_protein,
                     user_current_weight, raw_json
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ''', (
                 date_str,
                 summary.get("activity_energy"),
@@ -229,6 +231,7 @@ class YazioDatabase:
                 goals.get("nutrient.protein"),
                 goals.get("nutrient.fat"),
                 goals.get("nutrient.carb"),
+                actual_energy,
                 actual_protein,
                 actual_fat,
                 actual_carb,

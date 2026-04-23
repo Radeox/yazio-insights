@@ -433,7 +433,7 @@
             labels: labels,
             datasets: createDataset(
               "kcal",
-              "activity_energy",
+              "actual_energy",
               "goal_energy",
               "#3b82f6",
             ),
@@ -564,15 +564,15 @@
         });
       }
 
-      function updateAverages(days) {
-        let slice = days === 0 ? allData : allData.slice(-days);
-        if (slice.length === 0) return;
+        function updateAverages(days) {
+          let slice = days === 0 ? allData : allData.slice(-days);
+          if (slice.length === 0) return;
 
-        const avg = (arr) =>
-          (arr.reduce((a, b) => a + (b || 0), 0) / arr.length).toFixed(1);
+          const avg = (arr) =>
+            (arr.reduce((a, b) => a + (b || 0), 0) / arr.length).toFixed(1);
 
-        document.getElementById("avg-energy").textContent =
-          Math.round(avg(slice.map((d) => d.activity_energy))) + " kcal";
+          document.getElementById("avg-energy").textContent =
+            Math.round(avg(slice.map((d) => d.actual_energy))) + " kcal";
         document.getElementById("avg-steps").textContent = Math.round(
           avg(slice.map((d) => d.steps)),
         );
