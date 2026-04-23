@@ -392,30 +392,27 @@
         </div>
       </div>
 
-      <!-- Tab Content: Food Log -->
       <div id="food" class="tab-content space-y-8">
-        <div
-          class="bg-yazio-card p-6 md:p-10 rounded-2xl shadow-xl border border-slate-800"
-        >
-          <div
-            class="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-4"
-          >
-            <h2
-              class="text-xl font-black text-white uppercase tracking-widest italic border-l-4 border-yazio-emerald pl-4"
-            >
-              Daily Journal
-            </h2>
-            <select
-              id="food-date-select"
-              onchange="updateFoodLog()"
-              class="w-full md:w-64 bg-slate-800 border border-slate-700 text-white text-xs font-black rounded-lg focus:ring-1 focus:ring-yazio-emerald outline-none p-3 cursor-pointer appearance-none uppercase tracking-widest"
-            ></select>
-          </div>
-          <div id="food-log-content" class="space-y-12">
-            <!-- Populated by JS -->
-          </div>
-        </div>
+      <div class="bg-yazio-card p-6 md:p-10 rounded-2xl shadow-xl border border-slate-800">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-4">
+      <div class="flex items-center gap-6">
+          <h2 class="text-xl font-black text-white uppercase tracking-widest italic border-l-4 border-yazio-emerald pl-4">Daily Journal</h2>
+          <button onclick="exportJournalToCSV()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] font-black px-4 py-2 rounded-lg border border-slate-700 transition-colors uppercase tracking-widest flex items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+              Export CSV
+          </button>
       </div>
+      <select id="food-date-select" onchange="updateFoodLog()" class="w-full md:w-64 bg-slate-800 border border-slate-700 text-white text-xs font-black rounded-lg focus:ring-1 focus:ring-yazio-emerald outline-none p-3 cursor-pointer appearance-none uppercase tracking-widest">
+      </select>
+      </div>
+      <div id="food-log-content" class="space-y-12">
+      <!-- Populated by JS -->
+      </div>
+      </div>
+      </div>
+
     </div>
 
     <script>
@@ -503,7 +500,7 @@
 
             const title = document.createElement("h3");
             title.className =
-              "text-sm font-black text-slate-300 uppercase tracking-[0.4em] mb-6 flex items-center justify-between";
+              "text-sm font-black text-slate-300 uppercase tracking-[0.4em] mb-4 flex items-center justify-between";
             title.innerHTML = `<span>${daytime}</span>`;
             mealDiv.appendChild(title);
 
@@ -788,6 +785,41 @@
           selectedBtn.classList.add("active");
         }
       }
+
+        function exportJournalToCSV() {
+          if (!allData || allData.length === 0) {
+            alert("No data available to export.");
+            return;
+          }
+
+          const csvRows = [["Date", "Meal Type", "Dish Name"]];
+
+          allData.forEach((day) => {
+            if (day.food_log && day.food_log.length > 0) {
+              day.food_log.forEach((item) => {
+                csvRows.push([
+                  day.date,
+                  item.daytime || "unknown",
+                  (item.name || "Unknown Item").replace(/"/g, '""'), // Escape quotes for CSV
+                ]);
+              });
+            }
+          });
+
+          const csvContent = csvRows
+            .map((row) => row.map((cell) => `"${cell}"`).join(","))
+            .join("\n");
+
+          const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement("a");
+          link.setAttribute("href", url);
+          link.setAttribute("download", `yazio_journal_export_${new Date().toISOString().split('T')[0]}.csv`);
+          link.style.visibility = "hidden";
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        }
 
       init();
     </script>
