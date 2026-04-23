@@ -14,18 +14,29 @@ def export_data():
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
     
-    cursor.execute('''
-        SELECT * FROM daily_summaries 
-        ORDER BY date ASC
-    ''')
+    # Get daily summaries
+    cursor.execute('SELECT * FROM daily_summaries ORDER BY date ASC')
+    summaries = [dict(row) for row in cursor.fetchall()]
     
-    rows = cursor.fetchall()
-    data = [dict(row) for row in rows]
+    # Get consumed items
+    cursor.execute('SELECT * FROM consumed_items ORDER BY date ASC, daytime ASC')
+    items = [dict(row) for row in cursor.fetchall()]
+    
+    # Nest items inside summaries for easier frontend access
+    items_by_date = {}
+    for item in items:
+        date = item['date']
+        if date not in items_by_date:
+            items_by_date[date] = []
+        items_by_date[date].append(item)
+        
+    for summary in summaries:
+        summary['food_log'] = items_by_date.get(summary['date'], [])
     
     with open(json_path, "w") as f:
-        json.dump(data, f, indent=4)
+        json.dump(summaries, f, indent=4)
         
-    print(f"Exported {len(data)} days with full metrics to {json_path}")
+    print(f"Exported {len(summaries)} days with full metrics and food logs to {json_path}")
     conn.close()
 
 if __name__ == "__main__":

@@ -75,6 +75,14 @@ class YazioClient:
         response = self.session.get(url, params=params)
         return response.json() if response.status_code == 200 else None
 
+    def get_product_info(self, product_id):
+        """Fetches detailed information for a specific product."""
+        url = f"{BASE_URL}/products/{product_id}"
+        response = self.session.get(url)
+        if response.status_code == 200:
+            return response.json()
+        return None
+
 class YazioDatabase:
     def __init__(self, db_path="yazio_data.db"):
         self.conn = sqlite3.connect(db_path)
@@ -120,6 +128,19 @@ class YazioDatabase:
             )
         ''')
         
+        # Products metadata table
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS products (
+                id TEXT PRIMARY KEY,
+                name TEXT,
+                brand TEXT,
+                cal_per_unit REAL,
+                carb_per_unit REAL,
+                fat_per_unit REAL,
+                prot_per_unit REAL
+            )
+        ''')
+
         # Consumed Items table
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS consumed_items (
@@ -129,16 +150,36 @@ class YazioDatabase:
                 daytime TEXT,
                 type TEXT,
                 product_id TEXT,
+                name TEXT,
                 amount REAL,
                 serving TEXT,
                 serving_quantity REAL,
-                FOREIGN KEY (date) REFERENCES daily_summaries (date)
+                calories REAL,
+                carb REAL,
+                fat REAL,
+                protein REAL,
+                is_ai INTEGER DEFAULT 0,
+                FOREIGN KEY (date) REFERENCES daily_summaries (date),
+                FOREIGN KEY (product_id) REFERENCES products (id)
             )
         ''')
         
         self.conn.commit()
 
-    def save_day(self, date_str, summary, consumed_items):
+    def get_cached_product(self, product_id):
+        cursor = self.conn.cursor()
+        cursor.execute("SELECT name, cal_per_unit, carb_per_unit, fat_per_unit, prot_per_unit FROM products WHERE id = ?", (product_id,))
+        return cursor.fetchone()
+
+    def save_product(self, product_id, name, brand=None, cal=0, carb=0, fat=0, prot=0):
+        cursor = self.conn.cursor()
+        cursor.execute('''
+            INSERT OR REPLACE INTO products (id, name, brand, cal_per_unit, carb_per_unit, fat_per_unit, prot_per_unit) 
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        ''', (product_id, name, brand, cal, carb, fat, prot))
+        self.conn.commit()
+
+    def save_day(self, client, date_str, summary, consumed_items):
         cursor = self.conn.cursor()
         
         # Save summary
@@ -200,23 +241,77 @@ class YazioDatabase:
             ))
 
         # Save consumed items
-        if consumed_items and "products" in consumed_items:
-            for item in consumed_items["products"]:
-                cursor.execute('''
-                    INSERT OR REPLACE INTO consumed_items (
-                        id, date, log_time, daytime, type, product_id, amount, serving, serving_quantity
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                ''', (
-                    item.get("id"),
-                    date_str,
-                    item.get("date"),
-                    item.get("daytime"),
-                    item.get("type"),
-                    item.get("product_id"),
-                    item.get("amount"),
-                    item.get("serving"),
-                    item.get("serving_quantity")
-                ))
+        for list_key in ["products", "simple_products", "recipe_portions"]:
+            if consumed_items and list_key in consumed_items:
+                for item in consumed_items[list_key]:
+                    p_id = item.get("product_id") or item.get("recipe_id")
+                    name = item.get("name")
+                    is_ai = 1 if item.get("is_ai_generated") else 0
+                    
+                    # Get nutrients if available directly in item (simple_products or specific logs)
+                    item_nutrients = item.get("nutrients", {})
+                    cal = item_nutrients.get("energy.energy", 0)
+                    carb = item_nutrients.get("nutrient.carb", 0)
+                    fat = item_nutrients.get("nutrient.fat", 0)
+                    prot = item_nutrients.get("nutrient.protein", 0)
+
+                    if p_id:
+                        cached = self.get_cached_product(p_id)
+                        if cached:
+                            name = cached[0] if not name else name
+                            # If calories are 0 in item but we have cached per-unit values, calculate them
+                            if cal == 0 and cached[1] is not None:
+                                amount = item.get("amount", 1) # Fallback to 1 if amount missing
+                                cal = cached[1] * amount
+                                carb = cached[2] * amount
+                                fat = cached[3] * amount
+                                prot = cached[4] * amount
+                        else:
+                            # Fetch from API
+                            p_info = client.get_product_info(p_id)
+                            if p_info:
+                                name = p_info.get("name") if not name else name
+                                p_nutrients = p_info.get("nutrients", {})
+                                p_cal = p_nutrients.get("energy.energy", 0)
+                                p_carb = p_nutrients.get("nutrient.carb", 0)
+                                p_fat = p_nutrients.get("nutrient.fat", 0)
+                                p_prot = p_nutrients.get("nutrient.protein", 0)
+                                
+                                self.save_product(p_id, name, p_info.get("brand"), p_cal, p_carb, p_fat, p_prot)
+                                
+                                if cal == 0:
+                                    amount = item.get("amount", 1)
+                                    cal = p_cal * amount
+                                    carb = p_carb * amount
+                                    fat = p_fat * amount
+                                    prot = p_prot * amount
+                    
+                    # Use ID if name still missing
+                    if not name:
+                        name = f"Unknown {item.get('type', 'item')}"
+
+                    cursor.execute('''
+                        INSERT OR REPLACE INTO consumed_items (
+                            id, date, log_time, daytime, type, product_id, name, amount, serving, serving_quantity,
+                            calories, carb, fat, protein, is_ai
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ''', (
+                        item.get("id"),
+                        date_str,
+                        item.get("date"),
+                        item.get("daytime"),
+                        item.get("type"),
+                        p_id,
+                        name,
+                        item.get("amount"),
+                        item.get("serving"),
+                        item.get("serving_quantity"),
+                        cal,
+                        carb,
+                        fat,
+                        prot,
+                        is_ai
+                    ))
         
         self.conn.commit()
 
@@ -244,7 +339,7 @@ def main():
         print(f"[{i+1}/{len(dates)}] Exporting {date_str}...", end="\r")
         summary = client.get_daily_summary(date_str)
         consumed = client.get_consumed_items(date_str)
-        db.save_day(date_str, summary, consumed)
+        db.save_day(client, date_str, summary, consumed)
         
     print(f"\nExport complete. Data saved to yazio_data.db")
     db.close()
