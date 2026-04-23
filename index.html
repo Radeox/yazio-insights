@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yazio Advanced Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .tab-btn.active { border-bottom: 2px solid #3b82f6; color: #3b82f6; }
+        .sidebar { height: calc(100vh - 4rem); position: sticky; top: 0rem; }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="max-w-[1400px] mx-auto py-8 px-4">
+        
+        <header class="mb-8 flex justify-between items-center">
+            <h1 class="text-3xl font-bold text-gray-800">Yazio Advanced Dashboard</h1>
+            <div class="text-sm text-gray-500" id="last-updated"></div>
+        </header>
+
+        <!-- Tabs Navigation -->
+        <div class="flex border-b border-gray-200 mb-6">
+            <button onclick="showTab('overview')" id="btn-overview" class="tab-btn px-6 py-2 font-medium text-gray-600 hover:text-blue-500 active">Daily Overview</button>
+            <button onclick="showTab('macros')" id="btn-macros" class="tab-btn px-6 py-2 font-medium text-gray-600 hover:text-blue-500">Macros & Meals</button>
+        </div>
+
+        <!-- Tab Content: Overview -->
+        <div id="overview" class="tab-content active">
+            <div class="flex flex-col lg:flex-row gap-8">
+                <!-- Charts Column (Single Column) -->
+                <div class="flex-grow space-y-8">
+                    <div class="bg-white p-6 rounded-lg shadow">
+                        <h2 class="text-xl font-semibold mb-4 text-gray-700">Energy (kcal)</h2>
+                        <div class="h-64"><canvas id="energyChart"></canvas></div>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow">
+                        <h2 class="text-xl font-semibold mb-4 text-gray-700">Steps</h2>
+                        <div class="h-64"><canvas id="stepsChart"></canvas></div>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow">
+                        <h2 class="text-xl font-semibold mb-4 text-gray-700">Water (ml)</h2>
+                        <div class="h-64"><canvas id="waterChart"></canvas></div>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow">
+                        <h2 class="text-xl font-semibold mb-4 text-gray-700">Protein (g)</h2>
+                        <div class="h-64"><canvas id="proteinChart"></canvas></div>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow">
+                        <h2 class="text-xl font-semibold mb-4 text-gray-700">Carbohydrates (g)</h2>
+                        <div class="h-64"><canvas id="carbChart"></canvas></div>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow">
+                        <h2 class="text-xl font-semibold mb-4 text-gray-700">Fat (g)</h2>
+                        <div class="h-64"><canvas id="fatChart"></canvas></div>
+                    </div>
+                </div>
+
+                <!-- Sidebar (Aligned with the first graph) -->
+                <div class="w-full lg:w-80 shrink-0">
+                    <div class="sidebar">
+                        <div class="bg-white p-6 rounded-lg shadow space-y-6">
+                            <h2 class="text-xl font-bold text-gray-800">Averages</h2>
+                            
+                            <div class="flex flex-wrap gap-2">
+                                <button onclick="updateAverages(7)" class="avg-btn bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-medium hover:bg-blue-200">Week</button>
+                                <button onclick="updateAverages(30)" class="avg-btn bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-medium hover:bg-blue-200">Month</button>
+                                <button onclick="updateAverages(365)" class="avg-btn bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-medium hover:bg-blue-200">Year</button>
+                                <button onclick="updateAverages(0)" class="avg-btn bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-medium hover:bg-blue-700">All</button>
+                            </div>
+
+                            <div id="averages-content" class="space-y-4">
+                                <div class="p-3 bg-gray-50 rounded">
+                                    <div class="text-xs text-gray-500 uppercase font-bold">Avg Energy</div>
+                                    <div id="avg-energy" class="text-2xl font-bold text-blue-600">0 kcal</div>
+                                </div>
+                                <div class="p-3 bg-gray-50 rounded">
+                                    <div class="text-xs text-gray-500 uppercase font-bold">Avg Steps</div>
+                                    <div id="avg-steps" class="text-2xl font-bold text-green-600">0</div>
+                                </div>
+                                <div class="p-3 bg-gray-50 rounded">
+                                    <div class="text-xs text-gray-500 uppercase font-bold">Avg Water</div>
+                                    <div id="avg-water" class="text-xl font-semibold text-cyan-600">0 ml</div>
+                                </div>
+                                <div class="p-3 bg-gray-50 rounded">
+                                    <div class="text-xs text-gray-500 uppercase font-bold">Avg Protein</div>
+                                    <div id="avg-protein" class="text-xl font-semibold text-orange-600">0g</div>
+                                </div>
+
+                                <div class="p-3 bg-gray-50 rounded">
+                                    <div class="text-xs text-gray-500 uppercase font-bold">Avg Carbs</div>
+                                    <div id="avg-carb" class="text-xl font-semibold text-purple-600">0g</div>
+                                </div>
+                                <div class="p-3 bg-gray-50 rounded">
+                                    <div class="text-xs text-gray-500 uppercase font-bold">Avg Fat</div>
+                                    <div id="avg-fat" class="text-xl font-semibold text-yellow-600">0g</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Content: Macros -->
+        <div id="macros" class="tab-content space-y-8">
+            <div class="bg-white p-6 rounded-lg shadow overflow-x-auto">
+                <h2 class="text-xl font-semibold mb-4 text-gray-700">Macros Aggregated (Daily)</h2>
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Protein (g)</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Goal P</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Carbs (g)</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Goal C</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Fat (g)</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Goal F</th>
+                        </tr>
+                    </thead>
+                    <tbody id="macros-table-body" class="bg-white divide-y divide-gray-200 text-sm text-gray-700">
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h2 class="text-xl font-semibold mb-4 text-gray-700">Macros Distribution (Last 7 Days)</h2>
+                <div class="h-80"><canvas id="macrosChart"></canvas></div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        let allData = [];
+
+        function showTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            document.getElementById('btn-' + tabId).classList.add('active');
+        }
+
+        async function init() {
+            try {
+                const response = await fetch('dashboard_data.json');
+                allData = await response.json();
+                
+                if (allData.length > 0) {
+                    document.getElementById('last-updated').textContent = 'Last update: ' + allData[allData.length - 1].date;
+                }
+
+                renderDailyCharts();
+                populateMacrosTable();
+                renderMacrosChart();
+                updateAverages(0); // Default to "All"
+
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        function renderDailyCharts() {
+            const labels = allData.map(d => d.date);
+            
+            const createDataset = (label, dataKey, goalKey, color) => [
+                { label: label, data: allData.map(d => d[dataKey]), backgroundColor: color },
+                { label: 'Goal', data: allData.map(d => d[goalKey]), borderColor: '#ef4444', type: 'line', pointRadius: 0, borderWidth: 2 }
+            ];
+
+            const chartOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    }
+                }
+            };
+
+            // Energy
+            new Chart(document.getElementById('energyChart'), {
+                type: 'bar',
+                data: { labels: labels, datasets: createDataset('kcal', 'activity_energy', 'goal_energy', '#3b82f6') },
+                options: chartOptions
+            });
+
+            // Steps
+            new Chart(document.getElementById('stepsChart'), {
+                type: 'bar',
+                data: { labels: labels, datasets: createDataset('Steps', 'steps', 'goal_steps', '#10b981') },
+                options: chartOptions
+            });
+
+            // Water
+            new Chart(document.getElementById('waterChart'), {
+                type: 'bar',
+                data: { labels: labels, datasets: createDataset('ml', 'water_intake', 'goal_water', '#06b6d4') },
+                options: chartOptions
+            });
+
+            // Protein
+            new Chart(document.getElementById('proteinChart'), {
+                type: 'bar',
+                data: { labels: labels, datasets: createDataset('Protein (g)', 'actual_protein', 'goal_protein', '#f97316') },
+                options: chartOptions
+            });
+
+            // Carbs
+            new Chart(document.getElementById('carbChart'), {
+                type: 'bar',
+                data: { labels: labels, datasets: createDataset('Carbs (g)', 'actual_carb', 'goal_carb', '#a855f7') },
+                options: chartOptions
+            });
+
+            // Fat
+            new Chart(document.getElementById('fatChart'), {
+                type: 'bar',
+                data: { labels: labels, datasets: createDataset('Fat (g)', 'actual_fat', 'goal_fat', '#eab308') },
+                options: chartOptions
+            });
+        }
+
+        function populateMacrosTable() {
+            const tbody = document.getElementById('macros-table-body');
+            tbody.innerHTML = '';
+            // Show last 30 days in table
+            allData.slice(-30).reverse().forEach(d => {
+                const row = `<tr>
+                    <td class="px-4 py-2">${d.date}</td>
+                    <td class="px-4 py-2 font-bold ${d.actual_protein >= d.goal_protein ? 'text-green-600' : 'text-orange-600'}">${Math.round(d.actual_protein)}g</td>
+                    <td class="px-4 py-2 text-gray-400">${Math.round(d.goal_protein)}g</td>
+                    <td class="px-4 py-2 font-bold">${Math.round(d.actual_carb)}g</td>
+                    <td class="px-4 py-2 text-gray-400">${Math.round(d.goal_carb)}g</td>
+                    <td class="px-4 py-2 font-bold">${Math.round(d.actual_fat)}g</td>
+                    <td class="px-4 py-2 text-gray-400">${Math.round(d.goal_fat)}g</td>
+                </tr>`;
+                tbody.innerHTML += row;
+            });
+        }
+
+        function renderMacrosChart() {
+            const last7 = allData.slice(-7);
+            new Chart(document.getElementById('macrosChart'), {
+                type: 'bar',
+                data: {
+                    labels: last7.map(d => d.date),
+                    datasets: [
+                        { label: 'Protein', data: last7.map(d => d.actual_protein), backgroundColor: '#f97316' },
+                        { label: 'Carbs', data: last7.map(d => d.actual_carb), backgroundColor: '#a855f7' },
+                        { label: 'Fat', data: last7.map(d => d.actual_fat), backgroundColor: '#eab308' }
+                    ]
+                },
+                options: { scales: { x: { stacked: true }, y: { stacked: true } }, maintainAspectRatio: false }
+            });
+        }
+
+        function updateAverages(days) {
+            let slice = days === 0 ? allData : allData.slice(-days);
+            if (slice.length === 0) return;
+
+            const avg = (arr) => (arr.reduce((a, b) => a + (b || 0), 0) / arr.length).toFixed(1);
+
+            document.getElementById('avg-energy').textContent = Math.round(avg(slice.map(d => d.activity_energy))) + ' kcal';
+            document.getElementById('avg-steps').textContent = Math.round(avg(slice.map(d => d.steps)));
+            document.getElementById('avg-water').textContent = Math.round(avg(slice.map(d => d.water_intake))) + ' ml';
+            document.getElementById('avg-protein').textContent = Math.round(avg(slice.map(d => d.actual_protein))) + 'g';
+            document.getElementById('avg-carb').textContent = Math.round(avg(slice.map(d => d.actual_carb))) + 'g';
+            document.getElementById('avg-fat').textContent = Math.round(avg(slice.map(d => d.actual_fat))) + 'g';
+        }
+
+        init();
+    </script>
+</body>
+</html>
